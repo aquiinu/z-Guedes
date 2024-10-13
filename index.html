@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Estoque e Caixa</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gestão de Estoque e Caixa</h1>
+
+        <!-- Seção do Caixa -->
+        <h2>Registro de Vendas</h2>
+        <div class="form-container">
+            <select id="saleProduct"></select>
+            <input type="number" id="saleQuantity" placeholder="Quantidade" required>
+            <button id="addToCart">Adicionar ao Carrinho</button>
+        </div>
+        
+        <h3>Carrinho de Compras</h3>
+        <div class="scrollable">
+            <table id="cartTable">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unitário</th>
+                        <th>Subtotal</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="cartTotal">Total: R$ 0.00</div>
+        <div class="form-container">
+            <select id="paymentMethod">
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+                <option value="pix">PIX</option>
+            </select>
+            <button id="finalizeSale">Finalizar Venda</button>
+        </div>
+        
+        <h2>Histórico de Vendas</h2>
+        <div>
+            <label for="filter">Filtrar por:</label>
+            <select id="filter">
+                <option value="all">Todas</option>
+                <option value="day">Hoje</option>
+                <option value="week">Esta Semana</option>
+                <option value="month">Este Mês</option>
+            </select>
+            <button id="clearSales">Limpar Histórico</button>
+        </div>
+        <div class="scrollable">
+            <table id="salesTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Produtos</th>
+                        <th>Valor Total</th>
+                        <th>Lucro</th>
+                        <th>Forma de Pagamento</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="spacer-small"></div>
+
+        <!-- Seção de Fechamento de Caixa -->
+        <h2>Fechamento de Caixa</h2>
+        <div class="form-container">
+            <input type="number" id="initialCash" placeholder="Saldo Inicial do Caixa" required>
+            <button id="closeCashRegister">Fechar Caixa</button>
+        </div>
+        <div id="cashSummary" style="text-align: center;"></div>
+
+        <div class="spacer-small"></div>
+
+        <!-- Seção de Histórico de Fechamento de Caixa -->
+        <h2>Histórico de Fechamento de Caixa</h2>
+        <div>
+            <label for="closingFilter">Filtrar por:</label>
+            <select id="closingFilter">
+                <option value="all">Todos</option>
+                <option value="day">Hoje</option>
+                <option value="week">Esta Semana</option>
+                <option value="month">Este Mês</option>
+            </select>
+            <button id="clearClosings">Limpar Histórico</button>
+        </div>
+        <div class="scrollable">
+            <table id="closingTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Dinheiro</th>
+                        <th>Cartão</th>
+                        <th>PIX</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="spacer-large"></div>
+
+        <!-- Seção do Estoque -->
+        <h2>Gestão de Estoque</h2>
+        <div class="form-container">
+            <input type="text" id="productName" placeholder="Nome do Produto" required>
+            <input type="number" id="productQuantity" placeholder="Quantidade" required>
+            <input type="number" id="productValue" placeholder="Valor" required>
+            <input type="number" id="productProfit" placeholder="Lucro" required>
+            <button id="addProduct">Adicionar Produto</button>
+        </div>
+        <h2>Produtos em Estoque</h2>
+        <div class="scrollable">
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th>Lucro</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="summary">
+            <h3>Resumo do Estoque</h3>
+            <p id="totalValue">Valor Total: R$ 0,00</p>
+            <p id="totalProfit">Lucro Total: R$ 0,00</p>
+        </div>
+
+        <div class="spacer-large"></div>
+
+        <!-- Seção de Despesas -->
+        <h2>Registro de Despesas</h2>
+        <div class="form-container">
+            <input type="text" id="expenseDescription" placeholder="Descrição da Despesa" required>
+            <input type="number" id="expenseValue" placeholder="Valor da Despesa" required>
+            <button id="addExpense">Adicionar Despesa</button>
+        </div>
+        <h2>Histórico de Despesas</h2>
+        <div class="scrollable">
+            <table id="expenseTable">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button id="clearExpenses">Limpar Histórico de Despesas</button>
+
+        <div class="spacer-large"></div>
+
+        <!-- Seção de Capital de Giro -->
+        <h2>Cálculo de Capital de Giro</h2>
+        <div class="form-container">
+            <input type="number" id="expenses" placeholder="Despesas" required>
+            <input type="number" id="taxes" placeholder="Impostos" required>
+            <button id="calculateWorkingCapital">Calcular Capital de Giro</button>
+        </div>
+        <div id="workingCapitalResult" style="text-align: center;">
+            <h3>Capital de Giro: R$ 0,00</h3>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
