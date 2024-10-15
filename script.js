@@ -8,6 +8,7 @@ let sales = JSON.parse(localStorage.getItem(salesKey)) || [];
 let closings = JSON.parse(localStorage.getItem(closingKey)) || [];
 let expenses = JSON.parse(localStorage.getItem(expensesKey)) || [];
 let cart = [];
+let filteredProducts = [];
 
 const stockTable = document.getElementById('stockTable').getElementsByTagName('tbody')[0];
 const salesTable = document.getElementById('salesTable').getElementsByTagName('tbody')[0];
@@ -17,6 +18,7 @@ const totalValueElement = document.getElementById('totalValue');
 const totalProfitElement = document.getElementById('totalProfit');
 const saleProductSelect = document.getElementById('saleProduct');
 const workingCapitalResult = document.getElementById('workingCapitalResult');
+const productSearch = document.getElementById('productSearch');
 
 window.onload = () => {
     updateTable();
@@ -98,24 +100,30 @@ function removeProduct(index) {
     updateSaleProductSelect();
 }
 
-function updateSaleProductSelect() {
+function updateSaleProductSelect(searchTerm = '') {
+    filteredProducts = products.filter(product => 
+        product.quantity > 0 && product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
     saleProductSelect.innerHTML = '';
-    products.forEach((product, index) => {
-        if (product.quantity > 0) {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `${product.name} - R$ ${product.value.toFixed(2)} (Qtd: ${product.quantity})`;
-            saleProductSelect.appendChild(option);
-        }
+    filteredProducts.forEach((product, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${product.name} - R$ ${product.value.toFixed(2)} (Qtd: ${product.quantity})`;
+        saleProductSelect.appendChild(option);
     });
 }
+
+productSearch.addEventListener('input', (e) => {
+    updateSaleProductSelect(e.target.value);
+});
 
 document.getElementById('addToCart').addEventListener('click', () => {
     const productIndex = parseInt(saleProductSelect.value);
     const quantity = parseInt(document.getElementById('saleQuantity').value);
 
-    if (productIndex >= 0 && quantity > 0 && quantity <= products[productIndex].quantity) {
-        const product = products[productIndex];
+    if (productIndex >= 0 && quantity > 0 && quantity <= filteredProducts[productIndex].quantity) {
+        const product = filteredProducts[productIndex];
         const cartItem = {
             name: product.name,
             quantity: quantity,
@@ -241,9 +249,25 @@ document.getElementById('closeCashRegister').addEventListener('click', () => {
         cartao: 0,
         pix: 0,
     };
+    const productSales = {};
 
-    sales.forEach(sale => {
+    // Filtrar vendas do dia atual
+    const today = new Date().toDateString();
+    const todaySales = sales.filter(sale => new Date(sale.date).toDateString() === today);
+
+    todaySales.forEach(sale => {
         paymentSummary[sale.paymentMethod] += sale.totalValue;
+        sale.items.forEach(item => {
+            if (productSales[item.name]) {
+                productSales[item.name].quantity += item.quantity;
+                productSales[item.name].total += item.subtotal;
+            } else {
+                productSales[item.name] = {
+                    quantity: item.quantity,
+                    total: item.subtotal
+                };
+            }
+        });
     });
 
     const totalReceived = Object.values(paymentSummary).reduce((acc, value) => acc + value, 0);
@@ -268,6 +292,9 @@ document.getElementById('closeCashRegister').addEventListener('click', () => {
     `;
 
     document.getElementById('cashSummary').innerHTML = cashSummary;
+
+    // Gerar relatório
+    generateReport(productSales, paymentSummary, totalReceived);
 });
 
 function updateClosingTable(filter = 'all') {
@@ -373,65 +400,13 @@ document.getElementById('clearExpenses').addEventListener('click', () => {
 
 function clearSaleInputs() {
     document.getElementById('saleQuantity').value = '';
+    document.getElementById('productSearch').value = '';
+    updateSaleProductSelect();
 }
 
 document.getElementById('filter').addEventListener('change', (event) => {
     const filterValue = event.target.value;
     updateSalesTable(filterValue);
-});
-document.getElementById('closeCashRegister').addEventListener('click', () => {
-    const initialCash = parseFloat(document.getElementById('initialCash').value) || 0;
-    const paymentSummary = {
-        dinheiro: 0,
-        cartao: 0,
-        pix: 0,
-    };
-    const productSales = {};
-
-    // Filtrar vendas do dia atual
-    const today = new Date().toDateString();
-    const todaySales = sales.filter(sale => new Date(sale.date).toDateString() === today);
-
-    todaySales.forEach(sale => {
-        paymentSummary[sale.paymentMethod] += sale.totalValue;
-        sale.items.forEach(item => {
-            if (productSales[item.name]) {
-                productSales[item.name].quantity += item.quantity;
-                productSales[item.name].total += item.subtotal;
-            } else {
-                productSales[item.name] = {
-                    quantity: item.quantity,
-                    total: item.subtotal
-                };
-            }
-        });
-    });
-
-    const totalReceived = Object.values(paymentSummary).reduce((acc, value) => acc + value, 0);
-    const closingData = {
-        date: new Date().toISOString(),
-        ...paymentSummary,
-        total: initialCash + totalReceived,
-    };
-
-    closings.push(closingData);
-    saveClosings();
-    updateClosingTable();
-
-    const cashSummary = `
-        <h3>Fechamento de Caixa</h3>
-        <p>Saldo Inicial: R$ ${initialCash.toFixed(2)}</p>
-        <p>Dinheiro: R$ ${paymentSummary.dinheiro.toFixed(2)}</p>
-        <p>Cartão: R$ ${paymentSummary.cartao.toFixed(2)}</p>
-        <p>PIX: R$ ${paymentSummary.pix.toFixed(2)}</p>
-        <p>Total Recebido: R$ ${totalReceived.toFixed(2)}</p>
-        <p>Total em Caixa: R$ ${closingData.total.toFixed(2)}</p>
-    `;
-
-    document.getElementById('cashSummary').innerHTML = cashSummary;
-
-    // Gerar relatório
-    generateReport(productSales, paymentSummary, totalReceived);
 });
 
 function generateReport(productSales, paymentSummary, totalReceived) {
